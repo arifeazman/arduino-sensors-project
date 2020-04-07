@@ -1,0 +1,54 @@
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(13, 12, 11, 10, 9,8);
+const int gas = 0;
+const int ldr = 1;
+const int tmp = 2;
+const int buzzer = 6;
+const int cooler = 7;
+
+void setup()
+{
+  lcd.begin(16, 2);
+}
+
+void loop()
+{
+  float ldrVal = analogRead(ldr);
+  float tmpVal = analogRead(tmp);
+  tmpVal = ((tmpVal * 0.00488) - 0.5) * 100;
+  float gasVal = analogRead(gas);
+  
+  if(ldrVal>1016 && gasVal>560 && tmpVal > 40) {
+    runCooler();
+  }
+  
+  showValueOrWarning("LDR", ldrVal, 1016, 1000);
+  showValueOrWarning("Gas", gasVal, 560, 306);
+  showValueOrWarning("Temp.", tmpVal, 40, 15);  
+}
+
+void showValueOrWarning(String description, float val, int maxVal, int minVal){
+  lcd.setCursor(0,0);
+  String message = "";
+  if(val>maxVal){
+    message = "Too high " + description + " value"; 
+    lcd.print(message);
+    tone(buzzer, 500, 300);
+  } else if(val<minVal){
+    message = "Too low " + description + " value"; 
+    lcd.print(message);
+    tone(buzzer, 500, 200);
+  } else {
+    lcd.print(description + " value: " + val);
+  }
+  delay(1000);
+  lcd.clear();
+}
+
+void runCooler(){
+  digitalWrite(cooler, HIGH);
+  delay(20000); // run 20 seconds
+  digitalWrite(cooler, LOW);
+}
+
+
